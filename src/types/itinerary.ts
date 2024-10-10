@@ -1,8 +1,11 @@
-export interface Activity {
+export interface Itinerary {
   id: string;
+  userId: number;
   name: string;
-  description?: string;
-  type: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+  destinations: Destination[];
 }
 
 export interface Destination {
@@ -11,11 +14,9 @@ export interface Destination {
   activities: Activity[];
 }
 
-export interface Itinerary {
+export interface Activity {
   id: string;
   name: string;
+  type: "landmark" | "restaurant" | "other";
   description: string;
-  startDate: string;
-  endDate: string;
-  destinations: Destination[];
 }

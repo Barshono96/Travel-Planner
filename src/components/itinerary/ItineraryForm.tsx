@@ -1,31 +1,44 @@
 import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addItinerary } from "../../redux/slices/itinerarySlice";
-import { v4 as uuidv4 } from "uuid";
+import { AppDispatch, RootState } from "../../redux/store";
 
 const ItineraryForm: React.FC = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
+  const userId = useSelector((state: RootState) => state.auth.user?.id);
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [description, setDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    dispatch(
-      addItinerary({
-        id: uuidv4(),
-        name,
-        startDate,
-        endDate,
-        description,
-        destinations: [],
-      })
-    );
-    setName("");
-    setStartDate("");
-    setEndDate("");
-    setDescription("");
+    setError(null);
+    if (userId === undefined) {
+      setError("User not logged in");
+      return;
+    }
+    try {
+      const result = await dispatch(
+        addItinerary({
+          userId,
+          name,
+          startDate,
+          endDate,
+          description,
+          destinations: [],
+        })
+      ).unwrap();
+      console.log("Itinerary added:", result);
+      setName("");
+      setStartDate("");
+      setEndDate("");
+      setDescription("");
+    } catch (error: unknown) {
+      console.error("Failed to add itinerary:", error);
+      setError(error instanceof Error ? error.message : String(error));
+    }
   };
 
   return (
@@ -90,8 +103,10 @@ const ItineraryForm: React.FC = () => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+          rows={3}
         ></textarea>
       </div>
+      {error && <div className="text-red-500">{error}</div>}
       <button
         type="submit"
         className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"

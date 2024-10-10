@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addActivity } from "../../redux/slices/itinerarySlice";
+import { AppDispatch } from "../../redux/store";
 import { v4 as uuidv4 } from "uuid";
 
 interface ActivityFormProps {
@@ -12,7 +13,7 @@ const ActivityForm: React.FC<ActivityFormProps> = ({
   itineraryId,
   destinationId,
 }) => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const [name, setName] = useState("");
   const [type, setType] = useState<"landmark" | "restaurant" | "other">(
     "landmark"

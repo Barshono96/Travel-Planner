@@ -6,5 +6,25 @@
       "email": "smshakib.hossain005@gmail.com",
       "password": "1234"
     }
+  ],
+  "itineraries": [
+    {
+      "id": "5c43",
+      "userId": "277f",
+      "name": "US 2",
+      "startDate": "2024-10-25",
+      "endDate": "2024-10-26",
+      "description": "asdfghjkk",
+      "destinations": []
+    },
+    {
+      "id": "5950",
+      "userId": "277f",
+      "name": "Bangladesh",
+      "startDate": "2024-10-24",
+      "endDate": "2024-10-31",
+      "description": "aaaaa",
+      "destinations": []
+    }
   ]
 }
