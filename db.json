@@ -97,6 +97,37 @@
           "lng": 16.093801686068566
         }
       ]
+    },
+    {
+      "id": "5383",
+      "userId": "277f",
+      "name": "Japan",
+      "startDate": "2024-10-20",
+      "endDate": "2024-10-25",
+      "description": "Japan Tour",
+      "destinations": [
+        {
+          "id": "1728816265419",
+          "name": "Destination 1",
+          "activities": [],
+          "lat": 27.745773009155833,
+          "lng": 61.98658755169755
+        },
+        {
+          "id": "1728816266406",
+          "name": "Destination 2",
+          "activities": [],
+          "lat": 22.333816249306544,
+          "lng": 32.820561787490114
+        },
+        {
+          "id": "1728816267487",
+          "name": "Destination 3",
+          "activities": [],
+          "lat": 3.583597664038604,
+          "lng": 22.630022665056206
+        }
+      ]
     }
   ]
 }
