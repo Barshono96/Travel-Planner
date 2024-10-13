@@ -63,13 +63,15 @@ const ItineraryList: React.FC = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Your Itineraries</h2>
         <button
           onClick={handleOpenCreateModal}
-          className="bg-[#FFA500] hover:bg-[#FF8C00] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full transition-all duration-300 flex items-center shadow-md hover:shadow-lg transform hover:-translate-y-0.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           <FaPlus className="mr-2" />
-          Create New Itinerary
+          <span className="relative">
+            Create New Itinerary
+            <span className="absolute bottom-0 left-0 w-full h-0.5 bg-white transform scale-x-0 transition-transform duration-300 group-hover:scale-x-100"></span>
+          </span>
         </button>
       </div>
       {itineraries.length === 0 ? (

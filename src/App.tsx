@@ -3,7 +3,6 @@ import {
   BrowserRouter as Router,
   Route,
   Routes,
-  Link,
   Navigate,
 } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -14,6 +13,7 @@ import ItineraryPage from "./pages/ItineraryPage";
 import { checkAuthStatus } from "./redux/slices/authSlice";
 import { fetchItineraries } from "./redux/slices/itinerarySlice";
 import "leaflet/dist/leaflet.css";
+import Navbar from "./components/Navbar";
 
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({
   element,
@@ -43,42 +43,15 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="container mx-auto p-4">
-        <Routes>
-          <Route path="/" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-          <Route
-            path="/itinerary"
-            element={<PrivateRoute element={<ItineraryPage />} />}
-          />
-        </Routes>
-
-        <div className="mt-4 text-center">
+      <div className="flex flex-col min-h-screen">
+        <Navbar />
+        <div className="container mx-auto p-4 flex-grow">
           <Routes>
+            <Route path="/" element={<Login />} />
+            <Route path="/signup" element={<SignUp />} />
             <Route
-              path="/"
-              element={
-                <p>
-                  New user?{" "}
-                  <Link
-                    to="/signup"
-                    className="text-blue-500 hover:text-blue-700"
-                  >
-                    Sign up
-                  </Link>
-                </p>
-              }
-            />
-            <Route
-              path="/signup"
-              element={
-                <p>
-                  Already a user?{" "}
-                  <Link to="/" className="text-blue-500 hover:text-blue-700">
-                    Login
-                  </Link>
-                </p>
-              }
+              path="/itinerary"
+              element={<PrivateRoute element={<ItineraryPage />} />}
             />
           </Routes>
         </div>
