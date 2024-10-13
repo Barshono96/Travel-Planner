@@ -6,12 +6,14 @@ interface ItineraryState {
   itineraries: Itinerary[];
   loading: boolean;
   error: string | null;
+  currentItinerary: Itinerary | null;
 }
 
 const initialState: ItineraryState = {
   itineraries: [],
   loading: false,
   error: null,
+  currentItinerary: null,
 };
 
 export const fetchItineraries = createAsyncThunk(
@@ -43,6 +45,33 @@ export const addItinerary = createAsyncThunk(
   }
 );
 
+export const updateItinerary = createAsyncThunk(
+  "itinerary/updateItinerary",
+  async (updatedItinerary: Itinerary, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(
+        `http://localhost:3001/itineraries/${updatedItinerary.id}`,
+        updatedItinerary
+      );
+      return response.data;
+    } catch (error) {
+      return rejectWithValue("Failed to update itinerary");
+    }
+  }
+);
+
+export const deleteItinerary = createAsyncThunk(
+  "itinerary/deleteItinerary",
+  async (id: string, { rejectWithValue }) => {
+    try {
+      await axios.delete(`http://localhost:3001/itineraries/${id}`);
+      return id;
+    } catch (error) {
+      return rejectWithValue("Failed to delete itinerary");
+    }
+  }
+);
+
 const itinerarySlice = createSlice({
   name: "itinerary",
   initialState,
@@ -65,6 +94,9 @@ const itinerarySlice = createSlice({
           destination.activities.push(activity);
         }
       }
+    },
+    setCurrentItinerary: (state, action: PayloadAction<Itinerary | null>) => {
+      state.currentItinerary = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -98,9 +130,47 @@ const itinerarySlice = createSlice({
       .addCase(addItinerary.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
+      })
+      .addCase(updateItinerary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        updateItinerary.fulfilled,
+        (state, action: PayloadAction<Itinerary>) => {
+          state.loading = false;
+          const index = state.itineraries.findIndex(
+            (i) => i.id === action.payload.id
+          );
+          if (index !== -1) {
+            state.itineraries[index] = action.payload;
+          }
+          state.currentItinerary = null;
+        }
+      )
+      .addCase(updateItinerary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(deleteItinerary.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(
+        deleteItinerary.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.loading = false;
+          state.itineraries = state.itineraries.filter(
+            (itinerary) => itinerary.id !== action.payload
+          );
+        }
+      )
+      .addCase(deleteItinerary.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { addActivity } = itinerarySlice.actions;
+export const { addActivity, setCurrentItinerary } = itinerarySlice.actions;
 export default itinerarySlice.reducer;

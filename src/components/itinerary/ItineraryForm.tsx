@@ -1,16 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addItinerary } from "../../redux/slices/itinerarySlice";
+import {
+  addItinerary,
+  updateItinerary,
+} from "../../redux/slices/itinerarySlice";
 import { AppDispatch, RootState } from "../../redux/store";
 
-const ItineraryForm: React.FC = () => {
+interface Props {
+  onClose: () => void;
+}
+
+const ItineraryForm: React.FC<Props> = ({ onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
+  const currentItinerary = useSelector(
+    (state: RootState) => state.itinerary.currentItinerary
+  );
   const [name, setName] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [description, setDescription] = useState("");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentItinerary) {
+      setName(currentItinerary.name);
+      setStartDate(currentItinerary.startDate);
+      setEndDate(currentItinerary.endDate);
+      setDescription(currentItinerary.description);
+    }
+  }, [currentItinerary]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,23 +39,31 @@ const ItineraryForm: React.FC = () => {
       return;
     }
     try {
-      const result = await dispatch(
-        addItinerary({
-          userId,
-          name,
-          startDate,
-          endDate,
-          description,
-          destinations: [],
-        })
-      ).unwrap();
-      console.log("Itinerary added:", result);
-      setName("");
-      setStartDate("");
-      setEndDate("");
-      setDescription("");
+      if (currentItinerary) {
+        await dispatch(
+          updateItinerary({
+            ...currentItinerary,
+            name,
+            startDate,
+            endDate,
+            description,
+          })
+        ).unwrap();
+      } else {
+        await dispatch(
+          addItinerary({
+            userId,
+            name,
+            startDate,
+            endDate,
+            description,
+            destinations: [],
+          })
+        ).unwrap();
+      }
+      onClose();
     } catch (error: unknown) {
-      console.error("Failed to add itinerary:", error);
+      console.error("Failed to save itinerary:", error);
       setError(error instanceof Error ? error.message : String(error));
     }
   };
@@ -107,12 +134,21 @@ const ItineraryForm: React.FC = () => {
         ></textarea>
       </div>
       {error && <div className="text-red-500">{error}</div>}
-      <button
-        type="submit"
-        className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-      >
-        Create Itinerary
-      </button>
+      <div className="flex justify-end space-x-2">
+        <button
+          type="button"
+          onClick={onClose}
+          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+        >
+          {currentItinerary ? "Update" : "Create"} Itinerary
+        </button>
+      </div>
     </form>
   );
 };
