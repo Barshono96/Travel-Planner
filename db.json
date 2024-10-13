@@ -9,31 +9,42 @@
   ],
   "itineraries": [
     {
-      "id": "5c43",
+      "id": "1ff9",
       "userId": "277f",
-      "name": "US 2",
-      "startDate": "2024-10-25",
-      "endDate": "2024-10-26",
-      "description": "asdfghjkk",
-      "destinations": []
-    },
-    {
-      "id": "5950",
-      "userId": "277f",
-      "name": "Bangladesh",
-      "startDate": "2024-10-24",
-      "endDate": "2024-10-31",
-      "description": "aaaaa",
-      "destinations": []
-    },
-    {
-      "id": "9d18",
-      "userId": "277f",
-      "name": "Project Code Campus",
-      "startDate": "2024-10-25",
-      "endDate": "2024-10-31",
-      "description": "Gulshan 2",
-      "destinations": []
+      "name": "Paris",
+      "startDate": "2024-10-18",
+      "endDate": "2024-10-25",
+      "description": "ABC",
+      "destinations": [
+        {
+          "id": "1728810044399",
+          "name": "Destination 1",
+          "activities": [],
+          "lat": 5.125962918950908,
+          "lng": 32.4687243211943
+        },
+        {
+          "id": "1728810046804",
+          "name": "Destination 2",
+          "activities": [],
+          "lat": 16.83819510142805,
+          "lng": 16.304639716944518
+        },
+        {
+          "id": "1728810048602",
+          "name": "Destination 3",
+          "activities": [],
+          "lat": 31.23347232273089,
+          "lng": 57.41763751471033
+        },
+        {
+          "id": "1728810051962",
+          "name": "Destination 4",
+          "activities": [],
+          "lat": 44.690532093842506,
+          "lng": -72.6108767751572
+        }
+      ]
     }
   ]
 }

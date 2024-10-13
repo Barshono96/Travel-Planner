@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import axios from "axios";
-import { Itinerary, Activity } from "../../types/itinerary";
+import { Itinerary, Activity, Destination } from "../../types/itinerary";
 
 interface ItineraryState {
   itineraries: Itinerary[];
@@ -98,6 +98,24 @@ const itinerarySlice = createSlice({
     setCurrentItinerary: (state, action: PayloadAction<Itinerary | null>) => {
       state.currentItinerary = action.payload;
     },
+    updateDestination: (
+      state,
+      action: PayloadAction<{
+        itineraryId: string;
+        destination: Destination;
+      }>
+    ) => {
+      const { itineraryId, destination } = action.payload;
+      const itinerary = state.itineraries.find((i) => i.id === itineraryId);
+      if (itinerary) {
+        const index = itinerary.destinations.findIndex(
+          (d) => d.id === destination.id
+        );
+        if (index !== -1) {
+          itinerary.destinations[index] = destination;
+        }
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -172,5 +190,6 @@ const itinerarySlice = createSlice({
   },
 });
 
-export const { addActivity, setCurrentItinerary } = itinerarySlice.actions;
+export const { addActivity, setCurrentItinerary, updateDestination } =
+  itinerarySlice.actions;
 export default itinerarySlice.reducer;

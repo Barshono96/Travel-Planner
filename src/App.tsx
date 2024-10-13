@@ -13,6 +13,7 @@ import Login from "./components/auth/Login";
 import ItineraryPage from "./pages/ItineraryPage";
 import { checkAuthStatus } from "./redux/slices/authSlice";
 import { fetchItineraries } from "./redux/slices/itinerarySlice";
+import "leaflet/dist/leaflet.css";
 
 const PrivateRoute: React.FC<{ element: React.ReactElement }> = ({
   element,

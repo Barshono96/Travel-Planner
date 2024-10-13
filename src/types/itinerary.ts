@@ -12,6 +12,8 @@ export interface Destination {
   id: string;
   name: string;
   activities: Activity[];
+  lat?: number;
+  lng?: number;
 }
 
 export interface Activity {

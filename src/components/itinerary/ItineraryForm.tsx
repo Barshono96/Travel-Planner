@@ -1,16 +1,29 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+  useMapEvents,
+} from "react-leaflet";
+import { LatLngExpression } from "leaflet";
+import "leaflet/dist/leaflet.css";
+import {
   addItinerary,
   updateItinerary,
+  setCurrentItinerary,
 } from "../../redux/slices/itinerarySlice";
 import { AppDispatch, RootState } from "../../redux/store";
+import { Itinerary, Destination } from "../../types/itinerary";
 
 interface Props {
+  isOpen: boolean;
   onClose: () => void;
 }
 
-const ItineraryForm: React.FC<Props> = ({ onClose }) => {
+const ItineraryForm: React.FC<Props> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
   const userId = useSelector((state: RootState) => state.auth.user?.id);
   const currentItinerary = useSelector(
@@ -20,6 +33,7 @@ const ItineraryForm: React.FC<Props> = ({ onClose }) => {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [description, setDescription] = useState("");
+  const [destinations, setDestinations] = useState<Destination[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -28,6 +42,13 @@ const ItineraryForm: React.FC<Props> = ({ onClose }) => {
       setStartDate(currentItinerary.startDate);
       setEndDate(currentItinerary.endDate);
       setDescription(currentItinerary.description);
+      setDestinations(currentItinerary.destinations || []);
+    } else {
+      setName("");
+      setStartDate("");
+      setEndDate("");
+      setDescription("");
+      setDestinations([]);
     }
   }, [currentItinerary]);
 
@@ -39,117 +60,204 @@ const ItineraryForm: React.FC<Props> = ({ onClose }) => {
       return;
     }
     try {
+      const itineraryData: Omit<Itinerary, "id"> = {
+        userId,
+        name,
+        startDate,
+        endDate,
+        description,
+        destinations,
+      };
       if (currentItinerary) {
         await dispatch(
-          updateItinerary({
-            ...currentItinerary,
-            name,
-            startDate,
-            endDate,
-            description,
-          })
+          updateItinerary({ ...currentItinerary, ...itineraryData })
         ).unwrap();
       } else {
-        await dispatch(
-          addItinerary({
-            userId,
-            name,
-            startDate,
-            endDate,
-            description,
-            destinations: [],
-          })
-        ).unwrap();
+        await dispatch(addItinerary(itineraryData)).unwrap();
       }
-      onClose();
+      handleClose();
     } catch (error: unknown) {
       console.error("Failed to save itinerary:", error);
       setError(error instanceof Error ? error.message : String(error));
     }
   };
 
+  const handleClose = () => {
+    onClose();
+    dispatch(setCurrentItinerary(null));
+  };
+
+  const handleAddDestination = (e: L.LeafletMouseEvent) => {
+    const { lat, lng } = e.latlng;
+    const newDestination: Destination = {
+      id: Date.now().toString(),
+      name: `Destination ${destinations.length + 1}`,
+      activities: [],
+      lat,
+      lng,
+    };
+    setDestinations([...destinations, newDestination]);
+  };
+
+  const calculateDistance = (dest1: Destination, dest2: Destination) => {
+    const R = 6371; // Radius of the Earth in km
+    const dLat = (((dest2.lat || 0) - (dest1.lat || 0)) * Math.PI) / 180;
+    const dLon = (((dest2.lng || 0) - (dest1.lng || 0)) * Math.PI) / 180;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(((dest1.lat || 0) * Math.PI) / 180) *
+        Math.cos(((dest2.lat || 0) * Math.PI) / 180) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance.toFixed(2);
+  };
+
+  const MapEvents = () => {
+    useMapEvents({
+      click: handleAddDestination,
+    });
+    return null;
+  };
+
+  const mapCenter: LatLngExpression = [0, 0];
+
+  if (!isOpen) return null;
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label
-          htmlFor="name"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Trip Name
-        </label>
-        <input
-          type="text"
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        />
+    <div className="fixed inset-0 bg-black bg-opacity-50 overflow-y-auto h-full w-full z-50">
+      <div className="relative top-20 mx-auto p-8 border w-full max-w-4xl shadow-lg rounded-lg bg-white">
+        <h3 className="text-2xl font-semibold text-gray-800 mb-6">
+          {currentItinerary ? "Edit" : "Create"} Itinerary
+        </h3>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Trip Name
+            </label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFA500] focus:ring focus:ring-[#FFA500] focus:ring-opacity-50"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label
+                htmlFor="startDate"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Start Date
+              </label>
+              <input
+                type="date"
+                id="startDate"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFA500] focus:ring focus:ring-[#FFA500] focus:ring-opacity-50"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="endDate"
+                className="block text-sm font-medium text-gray-700"
+              >
+                End Date
+              </label>
+              <input
+                type="date"
+                id="endDate"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+                required
+                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFA500] focus:ring focus:ring-[#FFA500] focus:ring-opacity-50"
+              />
+            </div>
+          </div>
+          <div>
+            <label
+              htmlFor="description"
+              className="block text-sm font-medium text-gray-700"
+            >
+              Description
+            </label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#FFA500] focus:ring focus:ring-[#FFA500] focus:ring-opacity-50"
+              rows={3}
+            ></textarea>
+          </div>
+          <div className="h-96 w-full">
+            <MapContainer
+              center={mapCenter}
+              zoom={2}
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              {destinations.map((destination) => (
+                <Marker
+                  key={destination.id}
+                  position={[destination.lat || 0, destination.lng || 0]}
+                >
+                  <Popup>{destination.name}</Popup>
+                </Marker>
+              ))}
+              <Polyline
+                positions={destinations.map(
+                  (dest) => [dest.lat || 0, dest.lng || 0] as LatLngExpression
+                )}
+              />
+              <MapEvents />
+            </MapContainer>
+          </div>
+          <div>
+            <h4 className="text-lg font-medium text-gray-700 mb-2">
+              Travel Route
+            </h4>
+            {destinations.map((destination, index) => (
+              <div key={destination.id} className="mb-2">
+                <p>
+                  {destination.name} ({destination.lat?.toFixed(4)},{" "}
+                  {destination.lng?.toFixed(4)})
+                </p>
+                {index < destinations.length - 1 && (
+                  <p className="text-sm text-gray-500">
+                    Distance to next:{" "}
+                    {calculateDistance(destination, destinations[index + 1])} km
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <div className="flex justify-end space-x-3">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500]"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-[#FFA500] hover:bg-[#FF8C00] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFA500]"
+            >
+              {currentItinerary ? "Update" : "Create"} Itinerary
+            </button>
+          </div>
+        </form>
       </div>
-      <div>
-        <label
-          htmlFor="startDate"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Start Date
-        </label>
-        <input
-          type="date"
-          id="startDate"
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        />
-      </div>
-      <div>
-        <label
-          htmlFor="endDate"
-          className="block text-sm font-medium text-gray-700"
-        >
-          End Date
-        </label>
-        <input
-          type="date"
-          id="endDate"
-          value={endDate}
-          onChange={(e) => setEndDate(e.target.value)}
-          required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-        />
-      </div>
-      <div>
-        <label
-          htmlFor="description"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Description
-        </label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-          rows={3}
-        ></textarea>
-      </div>
-      {error && <div className="text-red-500">{error}</div>}
-      <div className="flex justify-end space-x-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          {currentItinerary ? "Update" : "Create"} Itinerary
-        </button>
-      </div>
-    </form>
+    </div>
   );
 };
 

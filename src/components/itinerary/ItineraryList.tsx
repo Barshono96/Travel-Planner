@@ -15,9 +15,6 @@ const ItineraryList: React.FC = () => {
   const itineraries = useSelector(
     (state: RootState) => state.itinerary.itineraries
   );
-  const currentItinerary = useSelector(
-    (state: RootState) => state.itinerary.currentItinerary
-  );
   const loading = useSelector((state: RootState) => state.itinerary.loading);
   const error = useSelector((state: RootState) => state.itinerary.error);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,53 +39,54 @@ const ItineraryList: React.FC = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-    dispatch(setCurrentItinerary(null));
-  };
-
   const handleOpenCreateModal = () => {
     dispatch(setCurrentItinerary(null));
     setIsModalOpen(true);
   };
 
-  if (userId === undefined) return <div>Please log in to view itineraries</div>;
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  if (userId === undefined)
+    return (
+      <div className="text-center text-gray-600">
+        Please log in to view itineraries
+      </div>
+    );
+  if (loading)
+    return <div className="text-center text-gray-600">Loading...</div>;
+  if (error)
+    return <div className="text-center text-red-600">Error: {error}</div>;
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Your Itineraries</h2>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="flex justify-between items-center mb-8">
+        <h2 className="text-3xl font-bold text-gray-800">Your Itineraries</h2>
         <button
           onClick={handleOpenCreateModal}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          className="bg-[#FFA500] hover:bg-[#FF8C00] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300"
         >
           Create New Itinerary
         </button>
       </div>
       {itineraries.length === 0 ? (
-        <p>No itineraries found. Create one to get started!</p>
+        <p className="text-center text-gray-600">
+          No itineraries found. Create one to get started!
+        </p>
       ) : (
-        itineraries.map((itinerary) => (
-          <ItineraryItem
-            key={itinerary.id}
-            itinerary={itinerary}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        ))
-      )}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
-          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
-            <h3 className="text-lg font-medium leading-6 text-gray-900 mb-2">
-              {currentItinerary ? "Edit" : "Create"} Itinerary
-            </h3>
-            <ItineraryForm onClose={handleCloseModal} />
-          </div>
+        <div className="space-y-6">
+          {itineraries.map((itinerary) => (
+            <ItineraryItem
+              key={itinerary.id}
+              itinerary={itinerary}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+            />
+          ))}
         </div>
       )}
+      <ItineraryForm isOpen={isModalOpen} onClose={handleCloseModal} />
     </div>
   );
 };
