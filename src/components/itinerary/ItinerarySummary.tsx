@@ -96,7 +96,6 @@ const StatCard: React.FC<{
   </div>
 );
 
-
 const TripCard: React.FC<{ trip: any }> = ({ trip }) => {
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("en-US", {
@@ -134,15 +133,6 @@ const TripCard: React.FC<{ trip: any }> = ({ trip }) => {
             <span className="text-gray-700 font-medium">End</span>
           </div>
           <span className="text-gray-900">{formatDate(trip.endDate)}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <FaMapMarkerAlt className="text-green-500 mr-2" />
-            <span className="text-gray-700 font-medium">Destination</span>
-          </div>
-          <span className="text-gray-900">
-            {trip.destination || "Not specified"}
-          </span>
         </div>
       </div>
     </div>
