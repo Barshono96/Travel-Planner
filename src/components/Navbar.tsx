@@ -11,6 +11,7 @@ import {
   FaMap,
   FaSignInAlt,
   FaUserPlus,
+  FaChartBar,
 } from "react-icons/fa";
 
 const Navbar: React.FC = () => {
@@ -61,6 +62,15 @@ const Navbar: React.FC = () => {
                   >
                     <FaMap className="mr-2" />
                     Itineraries
+                  </Link>
+                  <Link
+                    to="/summary"
+                    className={`flex items-center px-3 py-2 text-sm font-medium text-gray-700 ${isActive(
+                      "/summary"
+                    )} hover:text-blue-600 transition-colors duration-200`}
+                  >
+                    <FaChartBar className="mr-2" />
+                    Summary
                   </Link>
                   <button
                     onClick={handleLogout}
@@ -119,6 +129,15 @@ const Navbar: React.FC = () => {
                 >
                   <FaMap className="mr-2" />
                   Itineraries
+                </Link>
+                <Link
+                  to="/summary"
+                  className={`flex items-center px-3 py-2 rounded-md text-base font-medium text-gray-700 ${isActive(
+                    "/summary"
+                  )} hover:text-blue-600 transition-colors duration-200`}
+                >
+                  <FaChartBar className="mr-2" />
+                  Summary
                 </Link>
                 <button
                   onClick={handleLogout}

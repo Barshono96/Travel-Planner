@@ -10,6 +10,7 @@ import { RootState, AppDispatch } from "./redux/store";
 import SignUp from "./components/auth/SignUp";
 import Login from "./components/auth/Login";
 import ItineraryPage from "./pages/ItineraryPage";
+import ItinerarySummaryPage from "./pages/ItinerarySummaryPage"; // Add this import
 import { checkAuthStatus } from "./redux/slices/authSlice";
 import { fetchItineraries } from "./redux/slices/itinerarySlice";
 import "leaflet/dist/leaflet.css";
@@ -52,6 +53,10 @@ const App: React.FC = () => {
             <Route
               path="/itinerary"
               element={<PrivateRoute element={<ItineraryPage />} />}
+            />
+            <Route
+              path="/summary"
+              element={<PrivateRoute element={<ItinerarySummaryPage />} />}
             />
           </Routes>
         </div>
