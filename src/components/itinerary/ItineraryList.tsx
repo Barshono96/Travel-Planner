@@ -8,6 +8,7 @@ import {
 } from "../../redux/slices/itinerarySlice";
 import ItineraryItem from "./ItineraryItem";
 import ItineraryForm from "./ItineraryForm";
+import { FaPlus } from "react-icons/fa";
 
 const ItineraryList: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -60,13 +61,14 @@ const ItineraryList: React.FC = () => {
     return <div className="text-center text-red-600">Error: {error}</div>;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-7xl mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-gray-800">Your Itineraries</h2>
         <button
           onClick={handleOpenCreateModal}
-          className="bg-[#FFA500] hover:bg-[#FF8C00] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300"
+          className="bg-[#FFA500] hover:bg-[#FF8C00] text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-300 flex items-center"
         >
+          <FaPlus className="mr-2" />
           Create New Itinerary
         </button>
       </div>
@@ -75,7 +77,7 @@ const ItineraryList: React.FC = () => {
           No itineraries found. Create one to get started!
         </p>
       ) : (
-        <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {itineraries.map((itinerary) => (
             <ItineraryItem
               key={itinerary.id}

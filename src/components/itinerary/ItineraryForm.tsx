@@ -8,8 +8,10 @@ import {
   Polyline,
   useMapEvents,
 } from "react-leaflet";
-import { LatLngExpression } from "leaflet";
+import { LatLngExpression, Icon } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
 import {
   addItinerary,
   updateItinerary,
@@ -17,11 +19,19 @@ import {
 } from "../../redux/slices/itinerarySlice";
 import { AppDispatch, RootState } from "../../redux/store";
 import { Itinerary, Destination } from "../../types/itinerary";
+import useDistanceCalculation from "./useDistanceCalculation";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
+
+const customIcon = new Icon({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
 
 const ItineraryForm: React.FC<Props> = ({ isOpen, onClose }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -35,6 +45,8 @@ const ItineraryForm: React.FC<Props> = ({ isOpen, onClose }) => {
   const [description, setDescription] = useState("");
   const [destinations, setDestinations] = useState<Destination[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+  const { getDistanceBetween } = useDistanceCalculation(destinations);
 
   useEffect(() => {
     if (currentItinerary) {
@@ -97,21 +109,6 @@ const ItineraryForm: React.FC<Props> = ({ isOpen, onClose }) => {
       lng,
     };
     setDestinations([...destinations, newDestination]);
-  };
-
-  const calculateDistance = (dest1: Destination, dest2: Destination) => {
-    const R = 6371; // Radius of the Earth in km
-    const dLat = (((dest2.lat || 0) - (dest1.lat || 0)) * Math.PI) / 180;
-    const dLon = (((dest2.lng || 0) - (dest1.lng || 0)) * Math.PI) / 180;
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(((dest1.lat || 0) * Math.PI) / 180) *
-        Math.cos(((dest2.lat || 0) * Math.PI) / 180) *
-        Math.sin(dLon / 2) *
-        Math.sin(dLon / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance.toFixed(2);
   };
 
   const MapEvents = () => {
@@ -208,6 +205,7 @@ const ItineraryForm: React.FC<Props> = ({ isOpen, onClose }) => {
                 <Marker
                   key={destination.id}
                   position={[destination.lat || 0, destination.lng || 0]}
+                  icon={customIcon}
                 >
                   <Popup>{destination.name}</Popup>
                 </Marker>
@@ -233,7 +231,7 @@ const ItineraryForm: React.FC<Props> = ({ isOpen, onClose }) => {
                 {index < destinations.length - 1 && (
                   <p className="text-sm text-gray-500">
                     Distance to next:{" "}
-                    {calculateDistance(destination, destinations[index + 1])} km
+                    {getDistanceBetween(index, index + 1).toFixed(2)} km
                   </p>
                 )}
               </div>
